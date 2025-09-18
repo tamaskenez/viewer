@@ -7,9 +7,6 @@
 [submodule "_submodules/imgui"]
 	path = _submodules/imgui
 	url = https://github.com/ocornut/imgui.git
-[submodule "_submodules/emscripten"]
-	path = _submodules/emscripten
-	url = https://github.com/emscripten-core/emscripten
 [submodule "_submodules/abseil-cpp"]
 	path = _submodules/abseil-cpp
 	url = https://github.com/abseil/abseil-cpp.git
