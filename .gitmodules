@@ -1,0 +1,15 @@
+[submodule "_submodules/meadow"]
+	path = _submodules/meadow
+	url = https://github.com/tamaskenez/meadow.git
+[submodule "_submodules/SDL"]
+	path = _submodules/SDL
+	url = https://github.com/libsdl-org/SDL.git
+[submodule "_submodules/imgui"]
+	path = _submodules/imgui
+	url = https://github.com/ocornut/imgui.git
+[submodule "_submodules/emscripten"]
+	path = _submodules/emscripten
+	url = https://github.com/emscripten-core/emscripten
+[submodule "_submodules/abseil-cpp"]
+	path = _submodules/abseil-cpp
+	url = https://github.com/abseil/abseil-cpp.git
