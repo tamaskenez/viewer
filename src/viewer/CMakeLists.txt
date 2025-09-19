@@ -11,4 +11,5 @@ target_include_directories(viewer PRIVATE .)
 target_link_libraries(viewer PRIVATE
 	imgui_backend_sdl3_opengl3
 	meadow
+	assimp::assimp
 )

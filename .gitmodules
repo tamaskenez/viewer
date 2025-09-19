@@ -10,3 +10,6 @@
 [submodule "_submodules/abseil-cpp"]
 	path = _submodules/abseil-cpp
 	url = https://github.com/abseil/abseil-cpp.git
+[submodule "_submodules/assimp"]
+	path = _submodules/assimp
+	url = https://github.com/assimp/assimp.git

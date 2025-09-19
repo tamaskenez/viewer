@@ -51,6 +51,24 @@ else()
 	find_package(OpenGL REQUIRED)
 endif()
 
+set(BUILD_SHARED_LIBS 0)
+
+# ASSIMP
+set(ASSIMP_BUILD_TESTS 0)
+set(ASSIMP_INSTALL 0)
+set(ASSIMP_IGNORE_GIT_HASH 1)
+set(ASSIMP_NO_EXPORT)
+set(ASSIMP_BUILD_ALL_EXPORTERS_BY_DEFAULT 0)
+set(ASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT 0)
+foreach(format OBJ STL GLTF COLLADA)
+	set(ASSIMP_BUILD_${format}_IMPORTER 1)
+endforeach()
+if(EMSCRIPTEN)
+	set(ASSIMP_BUILD_ZLIB 1)
+else()
+	set(ASSIMP_BUILD_ZLIB 0)
+endif()
+add_subdirectory(_submodules/assimp)
 
 # SDL
 

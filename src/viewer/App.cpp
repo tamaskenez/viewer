@@ -1,6 +1,7 @@
 #include "App.h"
 
 #include "AppState.h"
+#include "import3d.h"
 
 #include "ui/UI.h"
 #include "util/SDLApp.h"
@@ -17,6 +18,7 @@ struct App : public SDLApp {
     App(int /*argc*/, char** /*argv*/)
         : ui(UI::make(app_state))
     {
+        f();
     }
 
     SDL_AppResult SDL_AppIterate() override

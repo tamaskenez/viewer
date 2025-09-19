@@ -2,8 +2,8 @@
 
 #include "AppState.h"
 
+#include "util/imgui_backend.h"
 #include "util/opengl_imgui_headers.h"
-#include "util/sdl3_opengl3_imgui.h"
 #include "util/sdl_util.h"
 
 #include <meadow/cppext.h>
@@ -14,7 +14,7 @@ class UIImpl : public UI
 {
 public:
     const AppState& app_state;
-    sdl_unique_ptr<SDL_Window> window;
+    ImGuiBackend imgui_backend;
 
     struct UIState {
         bool show_demo_window = true;
@@ -22,18 +22,14 @@ public:
         ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
     } ui_state;
 
-    UIImpl(const AppState& app_state_arg, sdl_unique_ptr<SDL_Window> window_arg)
+    UIImpl(const AppState& app_state_arg)
         : app_state(app_state_arg)
-        , window(MOVE(window_arg))
     {
     }
 
     void render_frame() override
     {
-        // Start the Dear ImGui frame
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplSDL3_NewFrame();
-        ImGui::NewFrame();
+        imgui_backend.begin_frame();
 
         // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code
         // to learn more about Dear ImGui!).
@@ -82,72 +78,11 @@ public:
             ImGui::End();
         }
 
-        // Rendering
-        ImGui::Render();
-        glViewport(0, 0, iround<int>(ImGui::GetIO().DisplaySize.x), iround<int>(ImGui::GetIO().DisplaySize.y));
-        glClearColor(
-          ui_state.clear_color.x * ui_state.clear_color.w,
-          ui_state.clear_color.y * ui_state.clear_color.w,
-          ui_state.clear_color.z * ui_state.clear_color.w,
-          ui_state.clear_color.w
-        );
-        glClear(GL_COLOR_BUFFER_BIT);
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-        SDL_GL_SwapWindow(window.get());
+        imgui_backend.end_frame(ui_state.clear_color);
     }
 };
 
 std::unique_ptr<UI> UI::make(const AppState& app_state)
 {
-    CHECK_SDL(SDL_Init(SDL_INIT_VIDEO));
-
-    print_sdl_display_info();
-
-    const char* const glsl_version = init_sdl_opengl();
-
-    // Initialize SDL Window.
-
-    const auto primary_display_id = CHECK_SDL(SDL_GetPrimaryDisplay());
-    const float main_scale = CHECK_SDL(SDL_GetDisplayContentScale(primary_display_id));
-    const SDL_WindowFlags window_flags =
-      SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY;
-    auto window = sdl_unique_ptr<SDL_Window>(
-      CHECK_SDL(SDL_CreateWindow("Viewer", iround<int>(1280 * main_scale), iround<int>(800 * main_scale), window_flags))
-    );
-    SDL_GLContext gl_context = CHECK_SDL(SDL_GL_CreateContext(window.get()));
-
-    CHECK_SDL(SDL_GL_MakeCurrent(window.get(), gl_context));
-    CHECK_SDL(SDL_GL_SetSwapInterval(1)); // Enable vsync
-#ifndef __EMSCRIPTEN__
-    CHECK_SDL(SDL_SetWindowPosition(window.get(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED));
-#endif
-    CHECK_SDL(SDL_ShowWindow(window.get()));
-
-    // Initialize ImGUI
-    IMGUI_CHECKVERSION();
-    CHECK(ImGui::CreateContext());
-    ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
-
-    // Setup Dear ImGui style
-    ImGui::StyleColorsDark();
-    // ImGui::StyleColorsLight();
-
-    // Setup scaling
-    ImGuiStyle& style = ImGui::GetStyle();
-    style.ScaleAllSizes(main_scale); // Bake a fixed style scale. (until we have a solution for dynamic style scaling,
-    // changing this requires resetting Style + calling this again)
-    style.FontScaleDpi = main_scale; // Set initial font scale. (using io.ConfigDpiScaleFonts=true makes this
-    // unnecessary. We leave both here for documentation purpose)
-
-    // Setup Platform/Renderer backends
-    CHECK(ImGui_ImplSDL3_InitForOpenGL(window.get(), gl_context));
-    CHECK(ImGui_ImplOpenGL3_Init(glsl_version));
-
-#ifdef __EMSCRIPTEN__
-    // For an Emscripten build we are disabling file-system access, so let's not attempt to do a fopen() of the
-    // imgui.ini file. You may manually call LoadIniSettingsFromMemory() to load settings from your own storage.
-    ImGui::GetIO().IniFilename = nullptr;
-#endif
-
-    return std::make_unique<UIImpl>(app_state, MOVE(window));
+    return std::make_unique<UIImpl>(app_state);
 }
