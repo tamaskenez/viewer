@@ -70,6 +70,9 @@ else()
 endif()
 add_subdirectory(_submodules/assimp)
 
+# GLM
+add_subdirectory(_submodules/glm)
+
 # SDL
 
 add_subdirectory(_submodules/SDL)

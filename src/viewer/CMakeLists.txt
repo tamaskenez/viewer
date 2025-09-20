@@ -15,6 +15,7 @@ target_link_libraries(viewer PRIVATE
 	imgui_backend_sdl3_opengl3
 	meadow
 	assimp::assimp
+	glm::glm
 )
 
 if(NOT EMSCRIPTEN)
