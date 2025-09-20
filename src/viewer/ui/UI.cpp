@@ -3,12 +3,17 @@
 #include "AppState.h"
 
 #include "util/imgui_backend.h"
-#include "util/opengl_imgui_headers.h"
 #include "util/sdl_util.h"
 
 #include <meadow/cppext.h>
 
 #include <SDL3/SDL_init.h>
+
+#ifdef __EMSCRIPTEN__
+  #include <GLES3/gl3.h>
+#else
+  #include <glad/gl.h>
+#endif
 
 class UIImpl : public UI
 {
@@ -25,6 +30,16 @@ public:
     UIImpl(const AppState& app_state_arg)
         : app_state(app_state_arg)
     {
+        // At this point ImGuiBackend already initialized the gl context.
+#ifndef __EMSCRIPTEN__
+        gladLoaderLoadGL();
+#endif
+    }
+    ~UIImpl() override
+    {
+#ifndef __EMSCRIPTEN__
+        gladLoaderUnloadGL();
+#endif
     }
 
     void render_frame() override
@@ -78,6 +93,7 @@ public:
             ImGui::End();
         }
 
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         imgui_backend.end_frame(ui_state.clear_color);
     }
 };

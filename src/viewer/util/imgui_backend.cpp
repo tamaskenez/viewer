@@ -1,12 +1,21 @@
 #include "imgui_backend.h"
 
-#include "opengl_imgui_headers.h"
 #include "sdl_util.h"
 
 #include <meadow/cppext.h>
 
+#include <imgui.h>
+#include <imgui_impl_opengl3.h>
+#include <imgui_impl_sdl3.h>
+
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_video.h>
+
+#ifdef __EMSCRIPTEN__
+  #include <GLES3/gl3.h>
+#else
+  #include <imgui_impl_opengl3_loader.h>
+#endif
 
 namespace
 {
@@ -123,12 +132,27 @@ void ImGuiBackend::begin_frame()
 void ImGuiBackend::end_frame(const ImVec4& clear_color)
 {
     // Rendering
-    ImGui::Render();
     glViewport(0, 0, iround<int>(ImGui::GetIO().DisplaySize.x), iround<int>(ImGui::GetIO().DisplaySize.y));
     glClearColor(
       clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w
     );
     glClear(GL_COLOR_BUFFER_BIT);
+
+    UNUSED auto one = ImGui::GetIO().DisplaySize;
+
+    // --- Clear and draw ---
+
+#if 0
+// Draw your 3D scene
+DrawCube(display_w, display_h);
+
+#endif
+    // --- Important: reset state before ImGui ---
+    glDisable(GL_DEPTH_TEST);
+    glUseProgram(0);
+    // glBindVertexArray(0);
+
+    ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     SDL_GL_SwapWindow(window.get());
 }

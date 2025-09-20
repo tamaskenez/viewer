@@ -105,6 +105,11 @@ set(sources
 )
 source_group(TREE ${imgui_root}/backends FILES ${sources})
 add_library(imgui_backend_sdl3_opengl3 STATIC ${sources})
+if(EMSCRIPTEN)
+target_compile_definitions(imgui_backend_sdl3_opengl3 PUBLIC
+	IMGUI_IMPL_OPENGL_ES3
+)
+endif()
 target_link_libraries(imgui_backend_sdl3_opengl3
     PUBLIC
         SDL3::SDL3
