@@ -13,5 +13,5 @@ public:
     ImGuiBackend();
 
     void begin_frame();
-    void end_frame(const ImVec4& clear_color);
+    void end_frame();
 };

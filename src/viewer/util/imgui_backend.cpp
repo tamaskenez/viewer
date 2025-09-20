@@ -129,29 +129,8 @@ void ImGuiBackend::begin_frame()
     ImGui::NewFrame();
 }
 
-void ImGuiBackend::end_frame(const ImVec4& clear_color)
+void ImGuiBackend::end_frame()
 {
-    // Rendering
-    glViewport(0, 0, iround<int>(ImGui::GetIO().DisplaySize.x), iround<int>(ImGui::GetIO().DisplaySize.y));
-    glClearColor(
-      clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w
-    );
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    UNUSED auto one = ImGui::GetIO().DisplaySize;
-
-    // --- Clear and draw ---
-
-#if 0
-// Draw your 3D scene
-DrawCube(display_w, display_h);
-
-#endif
-    // --- Important: reset state before ImGui ---
-    glDisable(GL_DEPTH_TEST);
-    glUseProgram(0);
-    // glBindVertexArray(0);
-
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     SDL_GL_SwapWindow(window.get());

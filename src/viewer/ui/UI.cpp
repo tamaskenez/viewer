@@ -1,6 +1,7 @@
 #include "UI.h"
 
 #include "AppState.h"
+#include "Renderer.h"
 
 #include "util/imgui_backend.h"
 #include "util/sdl_util.h"
@@ -8,38 +9,24 @@
 #include <meadow/cppext.h>
 
 #include <SDL3/SDL_init.h>
-
-#ifdef __EMSCRIPTEN__
-  #include <GLES3/gl3.h>
-#else
-  #include <glad/gl.h>
-#endif
+#include <SDL3/SDL_pixels.h>
 
 class UIImpl : public UI
 {
 public:
     const AppState& app_state;
     ImGuiBackend imgui_backend;
+    Renderer renderer;
 
     struct UIState {
         bool show_demo_window = true;
         bool show_another_window = false;
-        ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+        SDL_FColor clear_color = SDL_FColor{0.45f, 0.55f, 0.60f, 1.00f};
     } ui_state;
 
     UIImpl(const AppState& app_state_arg)
         : app_state(app_state_arg)
     {
-        // At this point ImGuiBackend already initialized the gl context.
-#ifndef __EMSCRIPTEN__
-        gladLoaderLoadGL();
-#endif
-    }
-    ~UIImpl() override
-    {
-#ifndef __EMSCRIPTEN__
-        gladLoaderUnloadGL();
-#endif
     }
 
     void render_frame() override
@@ -65,7 +52,7 @@ public:
             ImGui::Checkbox("Another Window", &ui_state.show_another_window);
 
             ImGui::SliderFloat("float", &f, 0.0f, 1.0f);               // Edit 1 float using a slider from 0.0f to 1.0f
-            ImGui::ColorEdit3("clear color", &ui_state.clear_color.x); // Edit 3 floats representing a color
+            ImGui::ColorEdit3("clear color", &ui_state.clear_color.r); // Edit 3 floats representing a color
 
             if (ImGui::Button("Button"
                 )) // Buttons return true when clicked (most widgets return true when edited/activated)
@@ -93,8 +80,12 @@ public:
             ImGui::End();
         }
 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        imgui_backend.end_frame(ui_state.clear_color);
+        renderer.start_3d_scene(SDL_Rect{}, ui_state.clear_color);
+
+        renderer.draw_scene();
+
+        renderer.reset_state_before_imgui_overlay();
+        imgui_backend.end_frame();
     }
 };
 
