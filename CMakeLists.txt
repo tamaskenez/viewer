@@ -38,6 +38,8 @@ if (EMSCRIPTEN)
 	append_linker_flags("-sMIN_SAFARI_VERSION=160000")
 	append_linker_flags("-sMIN_CHROME_VERSION=100")
 
+	append_linker_flags("--preload-file ${CMAKE_SOURCE_DIR}/assets@/assets")
+
 	if(CMAKE_BUILD_TYPE STREQUAL Debug)
 		append_linker_flags("-O0")
 	elseif(CMAKE_BUILD_TYPE STREQUAL Release)
@@ -132,6 +134,12 @@ include(_submodules/meadow/cmake/warnings_msvc.cmake)
 
 set(MEADOW_NO_EIGEN 1)
 set(MEADOW_NO_ABSL 1)
+
+if(EMSCRIPTEN)
+	set(RUNTIME_ASSETS_DIR "/assets") 
+else()
+	set(RUNTIME_ASSETS_DIR "${PROJECT_SOURCE_DIR}/assets") 
+endif()
 
 add_subdirectory(_submodules/meadow)
 add_subdirectory(src)

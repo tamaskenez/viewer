@@ -6,6 +6,7 @@ add_executable(viewer MACOSX_BUNDLE WIN32
 )
 target_compile_definitions(viewer PRIVATE
     MEADOW_NO_USING_STD
+    RUNTIME_ASSETS_DIR=\"${RUNTIME_ASSETS_DIR}\"
 )
 target_include_directories(viewer PRIVATE
 	.

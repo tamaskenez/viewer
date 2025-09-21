@@ -6,10 +6,9 @@
 
 #include <meadow/cppext.h>
 
-void f()
+void import_to_scene_to_render(const std::filesystem::path& path)
 {
     Assimp::Importer importer;
-    auto scene =
-      importer.ReadFile("/Users/dk8TamKe/Downloads/Untitled Model.zip", aiProcessPreset_TargetRealtime_Quality);
+    auto scene = importer.ReadFile(path, aiProcessPreset_TargetRealtime_Quality | aiProcess_PreTransformVertices);
     NOP;
 }
