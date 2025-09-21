@@ -37,11 +37,15 @@ bool UserInputTo3DNavigation::mouse_moved_rel(float xrel, float yrel, Camera& ca
         return true;
     }
     case 3: {
-        const auto d = glm::vec3(xrel, yrel, 0) * glm::length(camera.pos - camera.lookat) * k_pan_speed_factor;
-        camera.pos += d;
-        camera.lookat += d;
-    } break;
+        const auto pos_to_lookat = camera.lookat - camera.pos;
+        const auto right = glm::normalize(glm::cross(pos_to_lookat, camera.up));
+        const auto d = (xrel * right - yrel * camera.up) * glm::length(pos_to_lookat) * k_pan_speed_factor;
+        camera.pos -= d;
+        camera.lookat -= d;
+        return true;
     }
+    }
+    return false;
 }
 
 void UserInputTo3DNavigation::mouse_button_up(int ix)
@@ -64,7 +68,9 @@ bool UserInputTo3DNavigation::wheel(float /*x*/, float y, Camera& camera)
     if (y == 0) {
         return false;
     }
-    const auto d = glm::vec3(0, 0, -y * k_zoom_speed_factor * glm::length(camera.pos - camera.lookat));
+    const auto pos_to_lookat = camera.lookat - camera.pos;
+    auto horizontal_forward = glm::normalize(glm::vec3(pos_to_lookat.x, 0, pos_to_lookat.z));
+    const auto d = y * horizontal_forward * k_zoom_speed_factor * glm::length(pos_to_lookat);
     camera.pos += d;
     camera.lookat += d;
     return true;

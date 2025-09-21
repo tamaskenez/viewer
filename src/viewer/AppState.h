@@ -3,7 +3,9 @@
 #include "SceneToRender.h"
 #include "util/Camera.h"
 
+#include <optional>
+
 struct AppState {
     Camera camera;
-    std::unique_ptr<SceneToRender> str;
+    std::optional<SceneToRender> str;
 };

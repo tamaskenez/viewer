@@ -23,7 +23,7 @@ struct App : public SDLApp {
     App(int /*argc*/, char** /*argv*/)
         : ui(UI::make(app_state))
     {
-        load_test_scene();
+        load_scene(fs::path(RUNTIME_ASSETS_DIR) / "single_brick.zip");
     }
 
     SDL_AppResult SDL_AppIterate() override
@@ -79,9 +79,9 @@ struct App : public SDLApp {
 
     void SDL_AppQuit(SDL_AppResult /*result*/) override {}
 
-    void load_test_scene()
+    void load_scene(const fs::path& path)
     {
-        app_state.str = std::make_unique<SceneToRender>(imgui_backend.get_glsl_version());
+        app_state.str = import_to_scene_to_render(path, imgui_backend.get_glsl_version());
         auto bb = app_state.str->get_bounding_box();
         const auto bb_center = (bb[0] + bb[1]) / 2.0f;
         const auto diameter = glm::length(bb[1] - bb[0]);

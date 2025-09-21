@@ -162,14 +162,3 @@ gl_unique_name<GLName::vertex_array> gl_gen_vertex_array()
     CHECK_GL_VOID(glGenVertexArrays(1, &name));
     return gl_unique_name<GLName::vertex_array>(name);
 }
-
-GLVertexArrayWithBuffers::GLVertexArrayWithBuffers(size_t num_buffers)
-    : vertex_array(gl_gen_vertex_array())
-{
-    std::vector<GLuint> buffer_names(num_buffers);
-    CHECK_GL_VOID(glGenBuffers(iicast<GLsizei>(num_buffers), buffer_names.data()));
-    buffers.reserve(num_buffers);
-    for (auto n : buffer_names) {
-        buffers.emplace_back(n);
-    }
-}

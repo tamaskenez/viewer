@@ -88,10 +88,3 @@ gl_unique_name<GLName::program> gl_create_attach_link_program(
 
 gl_unique_name<GLName::buffer> gl_gen_buffer();
 gl_unique_name<GLName::vertex_array> gl_gen_vertex_array();
-
-struct GLVertexArrayWithBuffers {
-    gl_unique_name<GLName::vertex_array> vertex_array;
-    std::vector<gl_unique_name<GLName::buffer>> buffers;
-
-    explicit GLVertexArrayWithBuffers(size_t num_buffers);
-};
