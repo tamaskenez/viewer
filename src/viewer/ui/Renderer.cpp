@@ -4,56 +4,16 @@
 
 #include <SDL3/SDL_pixels.h>
 #include <SDL3/SDL_rect.h>
+#include <glm/gtc/matrix_transform.hpp>
 
-Renderer::Renderer()
+#include <string_view>
+
+Renderer::Renderer(std::string glsl_version_arg)
+    : glsl_version(MOVE(glsl_version_arg))
 {
 #ifndef __EMSCRIPTEN__
     gladLoaderLoadGL();
 #endif
-
-    CHECK_GL(glBindBuffer(GL_TEXTURE_2D, 1));
-
-    const float vertices[] = {
-      0, // v0
-      0,
-      0,
-      1, // v1
-      0,
-      0,
-      0, // v2
-      1,
-      0,
-      0, // v3
-      0,
-      0,
-      0, // v4
-      1,
-      0,
-      1, // v5
-      0,
-      0
-    };
-
-    GLuint vbo;
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    const unsigned indices[] = {0, 1, 2, 3, 4, 5};
-    GLuint ebo;
-    glGenBuffers(1, &ebo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    GLuint vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
-
-    glBindVertexArray(0);
-
-    // TODO: compile simple vertex/fragment shaders → cubeShader
 }
 
 Renderer::~Renderer()
@@ -63,25 +23,22 @@ Renderer::~Renderer()
 #endif
 }
 
-void Renderer::start_3d_scene(const SDL_Rect& viewport, const SDL_FColor& clear_color)
+glm::mat4 Renderer::start_3d_scene(const SDL_Rect& viewport, const SDL_FColor& clear_color)
 {
     // Rendering
-    glViewport(viewport.x, viewport.y, viewport.w, viewport.h);
-    glClearColor(clear_color.r, clear_color.g, clear_color.b, clear_color.a);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    CHECK_GL_VOID(glViewport(viewport.x, viewport.y, viewport.w, viewport.h));
+    CHECK_GL_VOID(glClearColor(clear_color.r, clear_color.g, clear_color.b, clear_color.a));
+    CHECK_GL_VOID(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+    CHECK_GL_VOID(glEnable(GL_DEPTH_TEST));
 
-#if 0
-// Draw your 3D scene
-DrawCube(display_w, display_h);
-
-#endif
+    auto view = glm::lookAt(camera_pos, lookat_pos, camera_up);
+    auto projection = glm::perspective(45.0f, float(viewport.w) / viewport.h, 0.1f, 100.0f);
+    return projection * view;
 }
-
-void Renderer::draw_scene() {}
 
 void Renderer::reset_state_before_imgui_overlay()
 {
-    glDisable(GL_DEPTH_TEST);
-    glUseProgram(0);
-    glBindVertexArray(0);
+    CHECK_GL_VOID(glDisable(GL_DEPTH_TEST));
+    CHECK_GL_VOID(glUseProgram(0));
+    CHECK_GL_VOID(glBindVertexArray(0));
 }

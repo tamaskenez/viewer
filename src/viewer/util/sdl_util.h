@@ -70,9 +70,11 @@ T check_sdl(T result, bool terminate_on_error, const std::source_location locati
             .c_str()
         );
 
+#ifdef NDEBUG
         if (terminate_on_error) {
             std::terminate();
         }
+#endif
     }
     assert(success);
     return result;

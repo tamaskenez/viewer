@@ -36,6 +36,7 @@ const char* set_sdl_gl_glsl_version()
     CHECK_SDL(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3));
     CHECK_SDL(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0));
 #elif defined(__APPLE__)
+  #if 0
     // GL 3.2 Core + GLSL 150
     const char* glsl_version = "#version 150";
     CHECK_SDL(SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG)
@@ -43,6 +44,15 @@ const char* set_sdl_gl_glsl_version()
     CHECK_SDL(SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE));
     CHECK_SDL(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3));
     CHECK_SDL(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2));
+  #else
+    // GL 4.1 Core + GLSL 410
+    const char* glsl_version = "#version 410";
+    CHECK_SDL(SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG)
+    ); // Always required on Mac
+    CHECK_SDL(SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE));
+    CHECK_SDL(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4));
+    CHECK_SDL(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1));
+  #endif
 #else
     // GL 3.0 + GLSL 130
     const char* glsl_version = "#version 130";
@@ -106,13 +116,13 @@ ImGuiBackend::ImGuiBackend()
 {
     CHECK_SDL(SDL_Init(SDL_INIT_VIDEO));
 
-    const char* const glsl_version = set_sdl_gl_glsl_version();
+    glsl_version = set_sdl_gl_glsl_version();
     window = init_sdl_window();
     init_imgui();
 
     // Setup Platform/Renderer backends
     CHECK(ImGui_ImplSDL3_InitForOpenGL(window.get(), CHECK_SDL(SDL_GL_GetCurrentContext())));
-    CHECK(ImGui_ImplOpenGL3_Init(glsl_version));
+    CHECK(ImGui_ImplOpenGL3_Init(glsl_version.c_str()));
 
 #ifdef __EMSCRIPTEN__
     // For an Emscripten build we are disabling file-system access, so let's not attempt to do a fopen() of the
@@ -133,5 +143,5 @@ void ImGuiBackend::end_frame()
 {
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    SDL_GL_SwapWindow(window.get());
+    CHECK_SDL(SDL_GL_SwapWindow(window.get()));
 }
