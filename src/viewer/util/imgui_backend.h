@@ -12,6 +12,7 @@ class ImGuiBackend
 
 public:
     ImGuiBackend();
+    ~ImGuiBackend();
 
     void begin_frame();
     void end_frame();

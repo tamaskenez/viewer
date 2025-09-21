@@ -1,5 +1,7 @@
 #include "SceneToRender.h"
 
+#include <glm/gtc/type_ptr.hpp>
+
 SceneToRender::SceneToRender(std::string glsl_version_arg)
     : glsl_version(MOVE(glsl_version_arg))
     , vaobs(2)
@@ -64,8 +66,13 @@ void SceneToRender::render(const glm::mat4& mvp)
 {
     CHECK_GL_VOID(glUseProgram(*program));
     auto mvp_loc = CHECK_GL(glGetUniformLocation(*program, "uMVP"));
-    CHECK_GL_VOID(glUniformMatrix4fv(mvp_loc, 1, false, &mvp[0][0]));
+    CHECK_GL_VOID(glUniformMatrix4fv(mvp_loc, 1, false, glm::value_ptr(mvp)));
 
     CHECK_GL_VOID(glBindVertexArray(*vaobs.vertex_array));
     CHECK_GL_VOID(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0));
+}
+
+std::array<glm::vec3, 2> SceneToRender::get_bounding_box() const
+{
+    return std::array<glm::vec3, 2>({glm::vec3(-1, -1, -1), glm::vec3(1, 1, 1)});
 }

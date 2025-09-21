@@ -1,6 +1,7 @@
 #include "imgui_backend.h"
 
 #include "sdl_util.h"
+#include "util/gl_util.h"
 
 #include <meadow/cppext.h>
 
@@ -10,12 +11,6 @@
 
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_video.h>
-
-#ifdef __EMSCRIPTEN__
-  #include <GLES3/gl3.h>
-#else
-  #include <imgui_impl_opengl3_loader.h>
-#endif
 
 namespace
 {
@@ -87,6 +82,11 @@ sdl_unique_ptr<SDL_Window> init_sdl_window()
     CHECK_SDL(SDL_SetWindowPosition(window.get(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED));
 #endif
     CHECK_SDL(SDL_ShowWindow(window.get()));
+
+#ifndef __EMSCRIPTEN__
+    gladLoaderLoadGL();
+#endif
+
     return window;
 }
 
@@ -131,16 +131,37 @@ ImGuiBackend::ImGuiBackend()
 #endif
 }
 
+ImGuiBackend::~ImGuiBackend()
+{
+#ifndef __EMSCRIPTEN__
+    gladLoaderUnloadGL();
+#endif
+}
+
 void ImGuiBackend::begin_frame()
 {
     // Start the Dear ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL3_NewFrame();
     ImGui::NewFrame();
+
+    int w, h;
+    CHECK_SDL(SDL_GetWindowSizeInPixels(window.get(), &w, &h));
+
+    const SDL_FColor clear_color = SDL_FColor{0.45f, 0.55f, 0.60f, 1.00f};
+    CHECK_GL_VOID(glViewport(0, 0, w, h));
+    CHECK_GL_VOID(glClearColor(clear_color.r, clear_color.g, clear_color.b, clear_color.a));
+    CHECK_GL_VOID(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+    CHECK_GL_VOID(glEnable(GL_DEPTH_TEST));
 }
 
 void ImGuiBackend::end_frame()
 {
+    // Reset state before imgui overlay.
+    CHECK_GL_VOID(glDisable(GL_DEPTH_TEST));
+    CHECK_GL_VOID(glUseProgram(0));
+    CHECK_GL_VOID(glBindVertexArray(0));
+
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     CHECK_SDL(SDL_GL_SwapWindow(window.get()));

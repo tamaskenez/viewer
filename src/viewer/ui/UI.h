@@ -2,7 +2,11 @@
 
 #include <memory>
 
+#include <meadow/matlab.h>
+
 struct AppState;
+
+const float k_default_fovy = matlab::deg2rad(45.0f);
 
 class UI
 {
@@ -11,5 +15,5 @@ public:
 
     virtual ~UI() = default;
 
-    virtual void render_frame() = 0;
+    virtual void render_imgui_content() = 0;
 };

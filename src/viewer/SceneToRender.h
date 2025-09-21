@@ -12,6 +12,7 @@ class SceneToRender
 public:
     explicit SceneToRender(std::string glsl_version_arg);
     void render(const glm::mat4& mvp);
+    std::array<glm::vec3, 2> get_bounding_box() const;
 
 private:
     std::string glsl_version;

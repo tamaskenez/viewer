@@ -9,6 +9,7 @@
 #include <format>
 #include <memory>
 #include <source_location>
+#include <unordered_map>
 
 // A std::unique_ptr-like object for SDL types, like SDL_Window, SDL_Renderer,
 // etc.. which calls the appropriate SDL_Destroy* function in its destructor.
@@ -87,3 +88,31 @@ template<class T>
 const T* sdl_event_cast(const SDL_Event* event);
 
 void print_sdl_display_info();
+
+bool is_sdl_mouse_event(SDL_EventType type);
+inline bool is_sdl_mouse_event(uint32_t type)
+{
+    return is_sdl_mouse_event(SDL_EventType(type));
+}
+
+// Economical logging of SDL_Event::type (collects frequent messages).
+class SDLEventLogger
+{
+public:
+    void log(const SDL_Event* event);
+
+private:
+    struct Deferred {
+        size_t count;
+        uint64_t since, until;
+        std::string last_message;
+    };
+    struct EventTypeHistory {
+        uint64_t last_logged_at;
+        std::optional<Deferred> deferred;
+    };
+
+    std::unordered_map<uint32_t, EventTypeHistory> history;
+};
+
+std::string sdl_get_event_description(const SDL_Event* event);

@@ -1,4 +1,6 @@
 #include "sdl_util.h"
+
+#include <meadow/cppext.h>
 #include <print>
 
 template<>
@@ -73,4 +75,58 @@ void print_sdl_display_info()
     }
 
     std::println("SDL_GetDisplayContentScale: {}", CHECK_SDL(SDL_GetDisplayContentScale(primary_display_id)));
+}
+
+bool is_sdl_mouse_event(SDL_EventType type)
+{
+    static constexpr auto values = {
+      SDL_EVENT_WINDOW_MOUSE_ENTER,
+      SDL_EVENT_WINDOW_MOUSE_LEAVE,
+      SDL_EVENT_MOUSE_MOTION,
+      SDL_EVENT_MOUSE_BUTTON_DOWN,
+      SDL_EVENT_MOUSE_BUTTON_UP,
+      SDL_EVENT_MOUSE_WHEEL,
+      SDL_EVENT_MOUSE_ADDED,
+      SDL_EVENT_MOUSE_REMOVED
+    };
+    return ra::find(values, type) != values.end();
+}
+
+std::string sdl_get_event_description(const SDL_Event* event)
+{
+    const auto buf_size = SDL_GetEventDescription(event, nullptr, 0);
+    std::string buf(iicast<size_t>(buf_size), 0);
+    SDL_GetEventDescription(event, buf.data(), buf_size);
+    return buf;
+}
+
+void SDLEventLogger::log(const SDL_Event* event)
+{
+    const auto* ce = reinterpret_cast<const SDL_CommonEvent*>(event);
+    auto it = history.find(ce->type);
+    if (it == history.end()) {
+        std::println("[{:.3f}] {}", double(ce->timestamp) / 1e9, sdl_get_event_description(event));
+        history.emplace(event->type, EventTypeHistory{.last_logged_at = ce->timestamp});
+    } else {
+        if (auto& deferred = it->second.deferred) {
+            ++deferred->count;
+            deferred->until = ce->timestamp;
+            deferred->last_message = sdl_get_event_description(event);
+        } else {
+            it->second.deferred = Deferred{
+              .count = 1,
+              .since = ce->timestamp,
+              .until = ce->timestamp,
+              .last_message = sdl_get_event_description(event)
+            };
+        }
+    }
+    for (auto& [k, v] : history) {
+        if (v.deferred && double(ce->timestamp - v.last_logged_at) / 1e9 > 5) {
+            std::println("[{:.3f}] {}", double(v.deferred->until) / 1e9, v.deferred->last_message);
+            std::println("    {} since {:.3f}", v.deferred->count, double(v.deferred->since) / 1e9);
+            v.last_logged_at = ce->timestamp;
+            v.deferred.reset();
+        }
+    }
 }
