@@ -57,7 +57,7 @@ SceneToRender::SceneToRender(
         uniform float shininess_strength;
         uniform vec3 dir_to_light;
 
-        const float k_ambient_intensity = 0.1;
+        const float k_ambient_intensity = 0.35;
         
         vec4 srgb_linear_to_gamma(vec4 c) {
             return vec4(mix(12.92 * c.rgb,

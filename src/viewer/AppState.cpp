@@ -15,4 +15,5 @@ AppState::AppState()
             builtin_scene_filenames.push_back(de.path().filename().string());
         }
     }
+    ra::sort(builtin_scene_filenames);
 }

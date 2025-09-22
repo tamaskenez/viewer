@@ -29,7 +29,7 @@ struct AppState {
 
     float light_elevation = matlab::deg2rad(40.0f);
     float light_declination = matlab::deg2rad(-78.0f);
-    glm::vec4 background_color = glm::vec4(0.3, 0.3, 0.3, 1);
+    glm::vec4 background_color = glm::vec4(0.2, 0.3, 0.15, 1);
 
     std::optional<PendingHttpRequest> pending_http_request;
 

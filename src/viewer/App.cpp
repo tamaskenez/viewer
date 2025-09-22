@@ -4,7 +4,7 @@
 #include "Event.h"
 #include "import3d.h"
 
-#include "ui/UI.h"
+#include "UI.h"
 #include "util/Clipboard.h"
 #include "util/SDLApp.h"
 #include "util/UserInputTo3DNavigation.h"
