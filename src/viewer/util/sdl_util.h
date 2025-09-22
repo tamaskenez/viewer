@@ -1,5 +1,7 @@
 #pragma once
 
+// Various SDL-related helpers.
+
 #include <SDL3/SDL_log.h>
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
@@ -94,25 +96,5 @@ inline bool is_sdl_mouse_event(uint32_t type)
 {
     return is_sdl_mouse_event(SDL_EventType(type));
 }
-
-// Economical logging of SDL_Event::type (collects frequent messages).
-class SDLEventLogger
-{
-public:
-    void log(const SDL_Event* event);
-
-private:
-    struct Deferred {
-        size_t count;
-        uint64_t since, until;
-        std::string last_message;
-    };
-    struct EventTypeHistory {
-        uint64_t last_logged_at;
-        std::optional<Deferred> deferred;
-    };
-
-    std::unordered_map<uint32_t, EventTypeHistory> history;
-};
 
 std::string sdl_get_event_description(const SDL_Event* event);

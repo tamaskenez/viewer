@@ -3,8 +3,9 @@
 #include <functional>
 #include <string>
 
-// Clipboard provides access to the clipboard text. If emscripten it notifies when the user pasted to the browser
-// clipboard (on desktop the app detects Cmd/Ctrl+V).
+// Thee Clipboard class provides access to either the system clipboard (native) or the text pasted into the web
+// application. The web application is notified when the user pasted into the browser window (on desktop the app detects
+// Cmd/Ctrl+V).
 
 namespace detail
 {

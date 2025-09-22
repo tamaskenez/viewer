@@ -5,6 +5,7 @@
 #include <optional>
 #include <string>
 
+// Events (commands) that can be sent to the App class, mostly from the UI.
 namespace Event
 {
 struct LoadBuiltInScene {

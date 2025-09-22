@@ -16,4 +16,6 @@ struct Camera {
 };
 
 glm::mat4 make_view_projection_matrix(const Camera& c, float aspect_ratio);
+
+// Positions the camera for viewing a scene in the bounding box.
 Camera make_camera_for_bounding_box(const std::array<glm::vec3, 2>& bounding_box);

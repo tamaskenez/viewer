@@ -111,34 +111,3 @@ std::string sdl_get_event_description(const SDL_Event* event)
     SDL_GetEventDescription(event, buf.data(), buf_size);
     return buf;
 }
-
-void SDLEventLogger::log(const SDL_Event* event)
-{
-    const auto* ce = reinterpret_cast<const SDL_CommonEvent*>(event);
-    auto it = history.find(ce->type);
-    if (it == history.end()) {
-        std::println("[{:.3f}] {}", double(ce->timestamp) / 1e9, sdl_get_event_description(event));
-        history.emplace(event->type, EventTypeHistory{.last_logged_at = ce->timestamp});
-    } else {
-        if (auto& deferred = it->second.deferred) {
-            ++deferred->count;
-            deferred->until = ce->timestamp;
-            deferred->last_message = sdl_get_event_description(event);
-        } else {
-            it->second.deferred = Deferred{
-              .count = 1,
-              .since = ce->timestamp,
-              .until = ce->timestamp,
-              .last_message = sdl_get_event_description(event)
-            };
-        }
-    }
-    for (auto& [k, v] : history) {
-        if (v.deferred && double(ce->timestamp - v.last_logged_at) / 1e9 > 5) {
-            std::println("[{:.3f}] {}", double(v.deferred->until) / 1e9, v.deferred->last_message);
-            std::println("    {} since {:.3f}", v.deferred->count, double(v.deferred->since) / 1e9);
-            v.last_logged_at = ce->timestamp;
-            v.deferred.reset();
-        }
-    }
-}

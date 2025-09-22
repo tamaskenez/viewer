@@ -4,7 +4,7 @@
 
 struct Camera;
 
-// UserInputTo3DNavigation turns user input (mouse, keys) to 3d navigation commands.
+// UserInputTo3DNavigation changes a Camera according to user input (mouse movements).
 class UserInputTo3DNavigation
 {
 public:

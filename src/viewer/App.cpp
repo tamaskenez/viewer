@@ -8,6 +8,7 @@
 #include "util/Clipboard.h"
 #include "util/SDLApp.h"
 #include "util/UserInputTo3DNavigation.h"
+#include "util/glm_util.h"
 #include "util/http.h"
 #include "util/imgui_backend.h"
 #include "util/sdl_util.h"
@@ -20,16 +21,8 @@
 
 namespace
 {
-template<glm::length_t L, typename T, glm::qualifier Q>
-nlohmann::json to_json_array(const glm::vec<L, T, Q>& v)
-{
-    auto a = nlohmann::json::array();
-    for (glm::length_t i : vi::iota(0, v.length())) {
-        a.push_back(v[i]);
-    }
-    return a;
+inline constexpr auto k_http_endpoint = "https://echo.free.beeceptor.com/";
 }
-} // namespace
 
 struct App : public SDLApp {
     AppState app_state;
@@ -56,12 +49,14 @@ struct App : public SDLApp {
         CHECK_SDL(SDL_GetWindowSizeInPixels(imgui_backend.get_sdl_window(), &w, &h));
         const float aspect_ratio = float(w) / float(h);
 
+        // Render scene if loaded.
         if (app_state.document) {
             auto light_dir = glm::rotate(glm::vec3(1, 0, 0), app_state.light_elevation, glm::vec3(0, 0, 1));
             light_dir = glm::rotate(light_dir, app_state.light_declination, glm::vec3(0, 1, 0));
             app_state.document->str.render(app_state.camera, aspect_ratio, glm::normalize(light_dir));
         }
 
+        // Render UI.
         ui->render_imgui_content();
 
         imgui_backend.end_frame();
@@ -71,7 +66,6 @@ struct App : public SDLApp {
 
     SDL_AppResult SDL_AppEvent(SDL_Event* event) override
     {
-        // std::println("{:.3f} {}", timestamp, sdl_get_event_description(event));
         ImGui_ImplSDL3_ProcessEvent(event);
         const auto& io = ImGui::GetIO();
         const auto min_window_size = std::min(io.DisplaySize.x, io.DisplaySize.y);
@@ -111,6 +105,8 @@ struct App : public SDLApp {
         return SDL_APP_CONTINUE;
     }
 
+    // "user" refers to SDL_UserEvent, not to the user of the application.
+    // Handling the events described in Event.h.
     void handle_user_events(std::any* event)
     {
         if (std::any_cast<Event::ResetView>(event)) {

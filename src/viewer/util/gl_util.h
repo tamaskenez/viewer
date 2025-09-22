@@ -1,5 +1,7 @@
 #pragma once
 
+// Various OpenGL related helpers.
+
 #include <meadow/cppext.h>
 
 #ifdef __EMSCRIPTEN__
@@ -41,6 +43,7 @@ void check_gl_void(bool terminate, const std::source_location location = std::so
 #define CHECK_GL(_CALL) detail::check_gl(_CALL, true)
 #define EXPECT_GL(_CALL) detail::check_gl(_CALL, false)
 
+// Manages (releases in destructor) an OpenGL object, like vertex array, buffer, etc...
 template<GLName GLN>
 class gl_unique_name
 {

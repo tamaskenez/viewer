@@ -5,7 +5,7 @@
 #include <glm/vec4.hpp>
 #include <imgui.h>
 
-// sdl/opengl/imgui-related display and rendering controller.
+// sdl/opengl/imgui-related display and rendering state.
 class ImGuiBackend
 {
     sdl_unique_ptr<SDL_Window> window;
