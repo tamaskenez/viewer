@@ -45,6 +45,8 @@ if (EMSCRIPTEN)
 	append_linker_flags("-sEXPORTED_RUNTIME_METHODS=[ccall]")
 	append_linker_flags("--shell-file=${CMAKE_SOURCE_DIR}/html/client.html")
 
+	append_linker_flags("-sFETCH")
+
 	if(CMAKE_BUILD_TYPE STREQUAL Debug)
 		append_linker_flags("-O0")
 	elseif(CMAKE_BUILD_TYPE STREQUAL Release)
@@ -80,8 +82,10 @@ add_subdirectory(_submodules/assimp)
 # GLM
 add_subdirectory(_submodules/glm)
 
-# SDL
+# NLOHMANN_JSON
+add_subdirectory(_submodules/json)
 
+# SDL
 add_subdirectory(_submodules/SDL)
 
 # IMGUI

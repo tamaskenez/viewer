@@ -7,12 +7,13 @@
 #include "ui/UI.h"
 #include "util/SDLApp.h"
 #include "util/UserInputTo3DNavigation.h"
+#include "util/http.h"
 #include "util/imgui_backend.h"
 #include "util/sdl_util.h"
 
-#include <meadow/cppext.h>
-
 #include <imgui_impl_sdl3.h>
+#include <meadow/cppext.h>
+#include <nlohmann/json.hpp>
 
 #ifdef __EMSCRIPTEN__
   #include "util/emscripten_browser_clipboard.h"
@@ -27,6 +28,19 @@ void browser_paste_handler(std::string&& paste_data, void* app_state)
 } // namespace
 #endif
 
+namespace
+{
+template<glm::length_t L, typename T, glm::qualifier Q>
+nlohmann::json to_json_array(const glm::vec<L, T, Q>& v)
+{
+    auto a = nlohmann::json::array();
+    for (glm::length_t i : vi::iota(0, v.length())) {
+        a.push_back(v[i]);
+    }
+    return a;
+}
+} // namespace
+
 struct App : public SDLApp {
     AppState app_state;
     ImGuiBackend imgui_backend;
@@ -36,9 +50,7 @@ struct App : public SDLApp {
     App(int /*argc*/, char** /*argv*/)
         : ui(UI::make(app_state))
     {
-        //        load_scene(fs::path(RUNTIME_ASSETS_DIR) / "single_brick.zip");
-        //        load_scene(fs::path(RUNTIME_ASSETS_DIR) / "steampunk_airship.zip");
-        load_scene(fs::path(RUNTIME_ASSETS_DIR) / "brick2.zip");
+        load_scene(0);
 
 #ifdef __EMSCRIPTEN__
         emscripten_browser_clipboard::paste(&browser_paste_handler, &app_state);
@@ -54,8 +66,8 @@ struct App : public SDLApp {
         CHECK_SDL(SDL_GetWindowSizeInPixels(imgui_backend.get_sdl_window(), &w, &h));
         const float aspect_ratio = float(w) / float(h);
 
-        if (app_state.str) {
-            app_state.str->render(app_state.camera, aspect_ratio);
+        if (app_state.document) {
+            app_state.document->str.render(app_state.camera, aspect_ratio);
         }
 
         ui->render_imgui_content();
@@ -101,9 +113,55 @@ struct App : public SDLApp {
     void handle_user_events(std::any* event)
     {
         if (std::any_cast<Event::ResetView>(event)) {
-            if (app_state.str) {
-                app_state.camera = make_camera_for_bounding_box(app_state.str->get_bounding_box());
+            if (app_state.document) {
+                app_state.camera = make_camera_for_bounding_box(app_state.document->str.get_bounding_box());
             }
+        } else if (std::any_cast<Event::SendHttpPostRequest>(event)) {
+            if (app_state.document) {
+                app_state.pending_http_request = PendingHttpRequest{
+                  .payload = nlohmann::json(
+                    {{"filename", app_state.document->filename},
+                                              {"light",
+                      nlohmann::json(
+                        {{"elevation", app_state.light_elevation},
+                         {"declination", app_state.light_declination},
+                         {"color", to_json_array(app_state.light_color)}}
+                      )},
+                                              {"background_color", to_json_array(app_state.background_color)}}
+                  )
+                };
+                ui->confirm_http_post_request(std::format(
+                  "Click OK to send an HTTP POST request to {}\n\nBody:\n\"{}\"",
+                  k_http_endpoint,
+                  app_state.pending_http_request->payload.dump(2)
+                ));
+            }
+        } else if (auto* http_post_request_event_confirmed = std::any_cast<Event::HttpPostRequestConfirmed>(event)) {
+            if (!app_state.pending_http_request) {
+                std::println(stderr, "Missing pending_http_request");
+                assert(false);
+                return;
+            }
+            if (http_post_request_event_confirmed->ok) {
+                send_http_post_request(
+                  k_http_endpoint,
+                  "application/json",
+                  app_state.pending_http_request->payload.dump(),
+                  [](int status_code, std::string status_text, std::string response) {
+                      send_event_to_app(Event::HttpRequestCompleted{
+                        .status_code = status_code, .status_text = MOVE(status_text), .response = MOVE(response)
+                      });
+                  }
+                );
+            }
+            app_state.pending_http_request.reset();
+        } else if (auto* http_request_completed = std::any_cast<Event::HttpRequestCompleted>(event)) {
+            ui->display_message_box(std::format(
+              "HTTP request completed {} ({})\nResponse:\n{}",
+              http_request_completed->status_text,
+              http_request_completed->status_code,
+              http_request_completed->response
+            ));
         } else {
             std::println(stderr, "Unhandled user event: {}", event->type().name());
             CHECK(false);
@@ -112,10 +170,17 @@ struct App : public SDLApp {
 
     void SDL_AppQuit(SDL_AppResult /*result*/) override {}
 
-    void load_scene(const fs::path& path)
+    void load_scene(size_t prebuilt_scene_ix)
     {
-        app_state.str = import_to_scene_to_render(path, imgui_backend.get_glsl_version());
-        app_state.camera = make_camera_for_bounding_box(app_state.str->get_bounding_box());
+        CHECK(!app_state.builtin_scene_filenames.empty());
+        auto filename = app_state.builtin_scene_filenames.at(prebuilt_scene_ix);
+        auto path = fs::path(RUNTIME_ASSETS_DIR) / filename;
+        app_state.document = Document{
+          .prebuilt_scene_ix = prebuilt_scene_ix,
+          .filename = filename,
+          .str = import_to_scene_to_render(path, imgui_backend.get_glsl_version())
+        };
+        app_state.camera = make_camera_for_bounding_box(app_state.document->str.get_bounding_box());
     }
 };
 

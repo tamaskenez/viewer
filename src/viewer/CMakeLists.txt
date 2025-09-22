@@ -17,6 +17,7 @@ target_link_libraries(viewer PRIVATE
 	meadow
 	assimp::assimp
 	glm::glm
+	nlohmann_json::nlohmann_json
 )
 
 if(NOT EMSCRIPTEN)

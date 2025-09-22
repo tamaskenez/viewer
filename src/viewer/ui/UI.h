@@ -14,4 +14,7 @@ public:
     virtual ~UI() = default;
 
     virtual void render_imgui_content() = 0;
+
+    virtual void confirm_http_post_request(std::string message) = 0;
+    virtual void display_message_box(std::string message) = 0;
 };

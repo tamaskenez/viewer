@@ -3,6 +3,7 @@
 #include <any>
 #include <deque>
 #include <optional>
+#include <string>
 
 namespace Event
 {
@@ -14,6 +15,14 @@ struct LoadCustomModelFromClipboard {
 struct SendHttpPostRequest {
 };
 struct ResetView {
+};
+struct HttpPostRequestConfirmed {
+    bool ok;
+};
+struct HttpRequestCompleted {
+    int status_code;
+    std::string status_text;
+    std::string response;
 };
 } // namespace Event
 

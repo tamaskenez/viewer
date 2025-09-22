@@ -3,9 +3,20 @@
 #include <SDL3/SDL_clipboard.h>
 
 AppState::AppState()
-    : builtin_scene_names({"brick2.zip", "cruiser.zip", "Brachiosaurus.zip"})
 {
-    current_prebuilt_scene_ix = 1;
+    std::error_code ec;
+    auto path = fs::path(RUNTIME_ASSETS_DIR);
+    auto it = fs::directory_iterator(path, fs::directory_options::skip_permission_denied, ec);
+    if (ec) {
+        std::println(stderr, "Can't read asset dir: {}", path.string());
+        return;
+    }
+    for (; it != fs::directory_iterator(); ++it) {
+        const auto& de = *it;
+        if (de.is_regular_file(ec) && !de.path().filename().string().starts_with('.')) {
+            builtin_scene_filenames.push_back(de.path().filename().string());
+        }
+    }
 }
 
 #ifdef __EMSCRIPTEN__
