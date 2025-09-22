@@ -24,7 +24,7 @@ var ENVIRONMENT_IS_SHELL = false;
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
-// include: /var/folders/pp/h0rbkgms00x4skj8_y4bwlmr0000gp/T/tmp0ge60vng.js
+// include: /var/folders/pp/h0rbkgms00x4skj8_y4bwlmr0000gp/T/tmppo4teohv.js
 
   Module['expectedDataFileDownloads'] ??= 0;
   Module['expectedDataFileDownloads']++;
@@ -148,25 +148,25 @@ Module['FS_createPath']("/", "assets", true, true);
     }
 
     }
-    loadPackage({"files": [{"filename": "/assets/.DS_Store", "start": 0, "end": 6148}, {"filename": "/assets/Brachiosaurus.zip", "start": 6148, "end": 23614297}, {"filename": "/assets/brick2.zip", "start": 23614297, "end": 23730938}, {"filename": "/assets/cruiser.zip", "start": 23730938, "end": 25588521}, {"filename": "/assets/single_brick.zip", "start": 25588521, "end": 25616831}, {"filename": "/assets/steampunk_airship.zip", "start": 25616831, "end": 42336518}], "remote_package_size": 42336518});
+    loadPackage({"files": [{"filename": "/assets/.DS_Store", "start": 0, "end": 6148}, {"filename": "/assets/brick2.zip", "start": 6148, "end": 122789}, {"filename": "/assets/single_brick.zip", "start": 122789, "end": 151099}], "remote_package_size": 151099});
 
   })();
 
-// end include: /var/folders/pp/h0rbkgms00x4skj8_y4bwlmr0000gp/T/tmp0ge60vng.js
-// include: /var/folders/pp/h0rbkgms00x4skj8_y4bwlmr0000gp/T/tmpq14xu481.js
+// end include: /var/folders/pp/h0rbkgms00x4skj8_y4bwlmr0000gp/T/tmppo4teohv.js
+// include: /var/folders/pp/h0rbkgms00x4skj8_y4bwlmr0000gp/T/tmp07rjrdwh.js
 
     // All the pre-js content up to here must remain later on, we need to run
     // it.
     if ((typeof ENVIRONMENT_IS_WASM_WORKER != 'undefined' && ENVIRONMENT_IS_WASM_WORKER) || (typeof ENVIRONMENT_IS_PTHREAD != 'undefined' && ENVIRONMENT_IS_PTHREAD) || (typeof ENVIRONMENT_IS_AUDIO_WORKLET != 'undefined' && ENVIRONMENT_IS_AUDIO_WORKLET)) Module['preRun'] = [];
     var necessaryPreJSTasks = Module['preRun'].slice();
-  // end include: /var/folders/pp/h0rbkgms00x4skj8_y4bwlmr0000gp/T/tmpq14xu481.js
-// include: /var/folders/pp/h0rbkgms00x4skj8_y4bwlmr0000gp/T/tmpix5k9tqk.js
+  // end include: /var/folders/pp/h0rbkgms00x4skj8_y4bwlmr0000gp/T/tmp07rjrdwh.js
+// include: /var/folders/pp/h0rbkgms00x4skj8_y4bwlmr0000gp/T/tmp_dcmklyn.js
 
     if (!Module['preRun']) throw 'Module.preRun should exist because file support used it; did a pre-js delete it?';
     necessaryPreJSTasks.forEach((task) => {
       if (Module['preRun'].indexOf(task) < 0) throw 'All preRun tasks that exist before user pre-js code should remain after; did you replace Module or modify Module.preRun?';
     });
-  // end include: /var/folders/pp/h0rbkgms00x4skj8_y4bwlmr0000gp/T/tmpix5k9tqk.js
+  // end include: /var/folders/pp/h0rbkgms00x4skj8_y4bwlmr0000gp/T/tmp_dcmklyn.js
 
 
 var arguments_ = [];
