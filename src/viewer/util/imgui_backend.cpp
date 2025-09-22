@@ -9,6 +9,7 @@
 #include <imgui_impl_opengl3.h>
 #include <imgui_impl_sdl3.h>
 
+#include <SDL3/SDL_hints.h>
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_video.h>
 
@@ -115,6 +116,8 @@ void init_imgui()
 ImGuiBackend::ImGuiBackend()
 {
     CHECK_SDL(SDL_Init(SDL_INIT_VIDEO));
+
+    CHECK_SDL(SDL_SetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT, "#none"));
 
     glsl_version = set_sdl_gl_glsl_version();
     window = init_sdl_window();

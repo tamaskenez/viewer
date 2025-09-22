@@ -43,6 +43,7 @@ if (EMSCRIPTEN)
 	append_linker_flags("-sALLOW_MEMORY_GROWTH")
 
 	append_linker_flags("-sEXPORTED_RUNTIME_METHODS=[ccall]")
+	append_linker_flags("--shell-file=${CMAKE_SOURCE_DIR}/html/client.html")
 
 	if(CMAKE_BUILD_TYPE STREQUAL Debug)
 		append_linker_flags("-O0")

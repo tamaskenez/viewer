@@ -14,11 +14,11 @@
 #include <imgui_impl_sdl3.h>
 
 #ifdef __EMSCRIPTEN__
-  #include "util/emscripten_browser_clipboard2.h"
+  #include "util/emscripten_browser_clipboard.h"
 
 namespace
 {
-void browser_paste_handler(const std::string& paste_data, void* app_state)
+void browser_paste_handler(std::string&& paste_data, void* app_state)
 {
     std::println("browser_paste_handler called");
     reinterpret_cast<AppState*>(app_state)->set_clipboard_text_pasted_into_browser(MOVE(paste_data));
