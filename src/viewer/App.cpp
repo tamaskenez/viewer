@@ -1,6 +1,7 @@
 #include "App.h"
 
 #include "AppState.h"
+#include "Event.h"
 #include "import3d.h"
 
 #include "ui/UI.h"
@@ -27,7 +28,6 @@ void browser_paste_handler(std::string&& paste_data, void* app_state)
 #endif
 
 struct App : public SDLApp {
-    SDLEventLogger event_logger;
     AppState app_state;
     ImGuiBackend imgui_backend;
     std::unique_ptr<UI> ui;
@@ -67,7 +67,6 @@ struct App : public SDLApp {
 
     SDL_AppResult SDL_AppEvent(SDL_Event* event) override
     {
-        const auto timestamp = double(reinterpret_cast<SDL_CommonEvent*>(event)->timestamp) / 1e9;
         // std::println("{:.3f} {}", timestamp, sdl_get_event_description(event));
         ImGui_ImplSDL3_ProcessEvent(event);
         const auto& io = ImGui::GetIO();
@@ -88,12 +87,27 @@ struct App : public SDLApp {
                 } else {
                     user_input_to_3d_navigation.mouse_button_up(mouse_button->button);
                 }
-            } else if (event->type == SDL_EVENT_MOUSE_WHEEL) {
-                auto* mouse_wheel = reinterpret_cast<SDL_MouseWheelEvent*>(event);
+            } else if (auto* mouse_wheel = sdl_event_cast<SDL_MouseWheelEvent>(event)) {
                 user_input_to_3d_navigation.wheel(mouse_wheel->x, mouse_wheel->y, app_state.camera);
+            } else if (auto* user = sdl_event_cast<SDL_UserEvent>(event)) {
+                auto user_event_ptr = reinterpret_cast<std::any*>(user->data1);
+                handle_user_events(user_event_ptr);
+                delete user_event_ptr;
             }
         }
         return SDL_APP_CONTINUE;
+    }
+
+    void handle_user_events(std::any* event)
+    {
+        if (std::any_cast<Event::ResetView>(event)) {
+            if (app_state.str) {
+                app_state.camera = make_camera_for_bounding_box(app_state.str->get_bounding_box());
+            }
+        } else {
+            std::println(stderr, "Unhandled user event: {}", event->type().name());
+            CHECK(false);
+        }
     }
 
     void SDL_AppQuit(SDL_AppResult /*result*/) override {}
@@ -101,19 +115,7 @@ struct App : public SDLApp {
     void load_scene(const fs::path& path)
     {
         app_state.str = import_to_scene_to_render(path, imgui_backend.get_glsl_version());
-        auto bb = app_state.str->get_bounding_box();
-        const auto bb_center = (bb[0] + bb[1]) / 2.0f;
-        const auto diameter = glm::length(bb[1] - bb[0]);
-        const auto fovy = k_default_fovy;
-        const auto viewing_distance = diameter / sin(fovy);
-        app_state.camera = Camera{
-          .pos = bb_center - glm::vec3(0, 0, viewing_distance),
-          .lookat = bb_center,
-          .up = glm::vec3(0, 1, 0),
-          .fovy = fovy,
-          .near = diameter / 100.0f,
-          .far = diameter * 100.0f
-        };
+        app_state.camera = make_camera_for_bounding_box(app_state.str->get_bounding_box());
     }
 };
 

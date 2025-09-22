@@ -2,14 +2,17 @@
 
 Simple 3D viewer app, for web and native.
 
+You can try out the deployed web app here: https://tamaskenez.github.io/viewer/
+
 ## Building for the web
 
 Install the latest emscripten SDK: https://emscripten.org/docs/getting_started/downloads.html
 
 ```
-emcmake cmake -S . -B bw -DCMAKE_BUILD_TYPE=Debug 
-cmake --build bw --target viewer -j
+./build_em.sh # Configures cmake, builds and runs it with a local server using "emrun"
 ```
+
+Note: `./build_em.sh` tries launching the Chrome browser, use `emrun ./bw/src/viewer/viewer.html` to run in the default browser.
 
 ## Building for native
 

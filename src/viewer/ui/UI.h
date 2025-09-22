@@ -6,12 +6,10 @@
 
 struct AppState;
 
-const float k_default_fovy = matlab::deg2rad(45.0f);
-
 class UI
 {
 public:
-    static std::unique_ptr<UI> make(const AppState& app_state);
+    static std::unique_ptr<UI> make(AppState& app_state);
 
     virtual ~UI() = default;
 

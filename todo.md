@@ -8,3 +8,4 @@ the data. Allowing the user to paste JSON is fine.
 - reset view button
 - buttons to load assets
 - tool dialog size/location
+- consider if ui can update appstate

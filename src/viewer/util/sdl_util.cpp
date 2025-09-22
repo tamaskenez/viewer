@@ -24,11 +24,23 @@ const SDL_MouseMotionEvent* sdl_event_cast(const SDL_Event* event)
 }
 
 template<>
+const SDL_MouseWheelEvent* sdl_event_cast(const SDL_Event* event)
+{
+    return event->type == SDL_EVENT_MOUSE_WHEEL ? reinterpret_cast<const SDL_MouseWheelEvent*>(event) : nullptr;
+}
+
+template<>
 const SDL_MouseButtonEvent* sdl_event_cast(const SDL_Event* event)
 {
     return event->type == SDL_EVENT_MOUSE_BUTTON_DOWN || event->type == SDL_EVENT_MOUSE_BUTTON_UP
            ? reinterpret_cast<const SDL_MouseButtonEvent*>(event)
            : nullptr;
+}
+
+template<>
+const SDL_UserEvent* sdl_event_cast(const SDL_Event* event)
+{
+    return event->type == SDL_EVENT_USER ? reinterpret_cast<const SDL_UserEvent*>(event) : nullptr;
 }
 
 void print_sdl_display_info()

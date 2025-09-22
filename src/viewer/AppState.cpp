@@ -20,7 +20,6 @@ void AppState::set_clipboard_text_pasted_into_browser(std::string clipboard_text
 #else
 std::string AppState::get_clipboard() const
 {
-    std::string clipboard_text;
     if (auto* clipboard_text = SDL_GetClipboardText()) {
         return clipboard_text;
     } else {
