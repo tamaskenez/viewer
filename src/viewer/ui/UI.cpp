@@ -8,11 +8,14 @@
 
 #include <meadow/cppext.h>
 
+#include <SDL3/SDL_clipboard.h>
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_pixels.h>
 #include <SDL3/SDL_video.h>
 
 #include <imgui.h>
+
+#include <format>
 
 class UIImpl : public UI
 {
@@ -32,34 +35,51 @@ public:
     {
         // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code
         // to learn more about Dear ImGui!).
-        if (ui_state.show_demo_window)
+        if (ui_state.show_demo_window) {
             ImGui::ShowDemoWindow(&ui_state.show_demo_window);
+        }
 
-        // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
         {
-            static float f = 0.0f;
-            static int counter = 0;
+            ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Once);
+            ImGui::Begin("Tools", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 
-            ImGui::Begin("Hello, world!"); // Create a window called "Hello, world!" and append into it.
+            // Scene selector.
+            ImGui::Separator();
+            ImGui::Text("Built-in scenes");
+            ImGui::Separator();
+            std::vector<const char*> items;
+            for (size_t i : vi::iota(0u, app_state.builtin_scene_names.size())) {
+                items.push_back(app_state.builtin_scene_names[i].c_str());
+            }
+            int current_item = -1;
+            if (app_state.current_prebuilt_scene_ix) {
+                current_item = iicast<int>(*app_state.current_prebuilt_scene_ix);
+            }
+            ImGui::ListBox("Click to load", &current_item, items.data(), iicast<int>(items.size()));
+            ImGui::Separator();
 
-            ImGui::Text("This is some useful text."); // Display some text (you can use a format strings too)
-            ImGui::Checkbox(
-              "Demo Window", &ui_state.show_demo_window
-            ); // Edit bools storing our window open/close ui_state
+            static std::string text = "<no value>";
+            if (ImGui::Button("GetClipboardText")) {
+                text = app_state.get_clipboard();
+            }
+            ImGui::Text("%s", std::format("from clipboard: {}", text).c_str());
 
-            ImGui::SliderFloat("float", &f, 0.0f, 1.0f); // Edit 1 float using a slider from 0.0f to 1.0f
+            // load custom model
+            // change light pitch
+            // change light yaw
+            // change light color
+            // change background color
+            // post http request with description
+            // reset view
 
-            if (ImGui::Button("Button"
-                )) // Buttons return true when clicked (most widgets return true when edited/activated)
-                counter++;
-            ImGui::SameLine();
-            ImGui::Text("counter = %d", counter);
-
+#ifndef NDEBUG
+            ImGui::Checkbox("Demo Window", &ui_state.show_demo_window);
             ImGui::Text(
               "Application average %.3f ms/frame (%.1f FPS)",
               1000.0f / ImGui::GetIO().Framerate,
               ImGui::GetIO().Framerate
             );
+#endif
             ImGui::End();
         }
     }

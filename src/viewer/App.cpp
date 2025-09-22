@@ -13,6 +13,19 @@
 
 #include <imgui_impl_sdl3.h>
 
+#ifdef __EMSCRIPTEN__
+  #include "util/emscripten_browser_clipboard2.h"
+
+namespace
+{
+void browser_paste_handler(const std::string& paste_data, void* app_state)
+{
+    std::println("browser_paste_handler called");
+    reinterpret_cast<AppState*>(app_state)->set_clipboard_text_pasted_into_browser(MOVE(paste_data));
+}
+} // namespace
+#endif
+
 struct App : public SDLApp {
     SDLEventLogger event_logger;
     AppState app_state;
@@ -25,7 +38,11 @@ struct App : public SDLApp {
     {
         //        load_scene(fs::path(RUNTIME_ASSETS_DIR) / "single_brick.zip");
         //        load_scene(fs::path(RUNTIME_ASSETS_DIR) / "steampunk_airship.zip");
-        load_scene(fs::path(RUNTIME_ASSETS_DIR) / "cruiser.zip");
+        load_scene(fs::path(RUNTIME_ASSETS_DIR) / "brick2.zip");
+
+#ifdef __EMSCRIPTEN__
+        emscripten_browser_clipboard::paste(&browser_paste_handler, &app_state);
+#endif
     }
 
     SDL_AppResult SDL_AppIterate() override
@@ -35,7 +52,7 @@ struct App : public SDLApp {
 
         int w, h;
         CHECK_SDL(SDL_GetWindowSizeInPixels(imgui_backend.get_sdl_window(), &w, &h));
-        const float aspect_ratio = float(w) / h;
+        const float aspect_ratio = float(w) / float(h);
 
         if (app_state.str) {
             app_state.str->render(app_state.camera, aspect_ratio);
