@@ -162,6 +162,8 @@ struct App : public SDLApp {
               http_request_completed->status_code,
               http_request_completed->response
             ));
+        } else if (auto* load_built_in_scene = std::any_cast<Event::LoadBuiltInScene>(event)) {
+            load_scene(load_built_in_scene->scene_ix);
         } else {
             std::println(stderr, "Unhandled user event: {}", event->type().name());
             CHECK(false);

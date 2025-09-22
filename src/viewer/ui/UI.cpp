@@ -49,8 +49,6 @@ public:
 
     void render_imgui_content() override
     {
-        // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code
-        // to learn more about Dear ImGui!).
         if (ui_state.show_demo_window) {
             ImGui::ShowDemoWindow(&ui_state.show_demo_window);
         }
@@ -71,7 +69,9 @@ public:
             if (app_state.document && app_state.document->prebuilt_scene_ix) {
                 current_item = iicast<int>(*app_state.document->prebuilt_scene_ix);
             }
-            ImGui::ListBox("Built-in scenes", &current_item, items.data(), iicast<int>(items.size()));
+            if (ImGui::ListBox("Built-in scenes", &current_item, items.data(), iicast<int>(items.size()))) {
+                send_event_to_app(Event::LoadBuiltInScene{.scene_ix = iicast<size_t>(current_item)});
+            }
             ImGui::Text("To load a custom model,\ncopy the the file to the clipboard\nand paste it into the browser.");
             ImGui::Spacing();
             ImGui::Separator();
