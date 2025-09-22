@@ -1,5 +1,5 @@
 #!/bin/bash -e
-cp bw/src/viewer/viewer* gh-pages
-git add gh-pages/*
+cp bw/src/viewer/viewer* docs
+git add docs/*
 git commit -m "gh-pages updated"
 git push origin head 
