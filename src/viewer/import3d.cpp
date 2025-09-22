@@ -44,6 +44,16 @@ SceneToRender import_to_scene_to_render(const std::filesystem::path& path, std::
         if (aiGetMaterialColor(mat, AI_MATKEY_COLOR_DIFFUSE, &c) == aiReturn_SUCCESS) {
             materials[i].color.diffuse = glm::vec4(c.r, c.g, c.b, c.a);
         }
+        if (aiGetMaterialColor(mat, AI_MATKEY_COLOR_SPECULAR, &c) == aiReturn_SUCCESS) {
+            materials[i].color.specular = glm::vec4(c.r, c.g, c.b, c.a);
+        }
+        float f;
+        if (aiGetMaterialFloat(mat, AI_MATKEY_SHININESS, &f) == aiReturn_SUCCESS) {
+            materials[i].shininess = f;
+        }
+        if (aiGetMaterialFloat(mat, AI_MATKEY_SHININESS_STRENGTH, &f) == aiReturn_SUCCESS) {
+            materials[i].shininess_strength = f;
+        }
     }
 
     std::vector<MeshToRender> meshes;

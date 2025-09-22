@@ -7,6 +7,8 @@
 #include <glm/mat4x4.hpp>
 #include <glm/vec4.hpp>
 
+struct Camera;
+
 struct MeshToRender {
     size_t material_ix;                                // Set in constructor.
     gl_unique_name<GLName::vertex_array> vertex_array; // Generated in constructor.
@@ -20,8 +22,9 @@ struct MeshToRender {
 
 struct Material {
     struct Color {
-        std::optional<glm::vec4> ambient, diffuse;
+        std::optional<glm::vec4> ambient, diffuse, specular;
     } color;
+    std::optional<float> shininess, shininess_strength;
 };
 
 // Preprocessed scene, ready to be rendered.
@@ -34,7 +37,7 @@ public:
       std::vector<MeshToRender> meshes
     );
 
-    void render(const glm::mat4& mvp);
+    void render(const Camera& camera, float aspect_ratio);
 
     const std::array<glm::vec3, 2>& get_bounding_box() const
     {

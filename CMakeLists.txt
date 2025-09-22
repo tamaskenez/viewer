@@ -40,6 +40,8 @@ if (EMSCRIPTEN)
 
 	append_linker_flags("--preload-file ${CMAKE_SOURCE_DIR}/assets@/assets")
 
+	append_linker_flags("-sALLOW_MEMORY_GROWTH")
+	
 	if(CMAKE_BUILD_TYPE STREQUAL Debug)
 		append_linker_flags("-O0")
 	elseif(CMAKE_BUILD_TYPE STREQUAL Release)

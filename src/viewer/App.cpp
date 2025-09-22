@@ -23,7 +23,9 @@ struct App : public SDLApp {
     App(int /*argc*/, char** /*argv*/)
         : ui(UI::make(app_state))
     {
-        load_scene(fs::path(RUNTIME_ASSETS_DIR) / "single_brick.zip");
+        //        load_scene(fs::path(RUNTIME_ASSETS_DIR) / "single_brick.zip");
+        //        load_scene(fs::path(RUNTIME_ASSETS_DIR) / "steampunk_airship.zip");
+        load_scene(fs::path(RUNTIME_ASSETS_DIR) / "cruiser.zip");
     }
 
     SDL_AppResult SDL_AppIterate() override
@@ -33,10 +35,10 @@ struct App : public SDLApp {
 
         int w, h;
         CHECK_SDL(SDL_GetWindowSizeInPixels(imgui_backend.get_sdl_window(), &w, &h));
-        auto vp = make_view_projection_matrix(app_state.camera, float(w) / h);
+        const float aspect_ratio = float(w) / h;
 
         if (app_state.str) {
-            app_state.str->render(vp);
+            app_state.str->render(app_state.camera, aspect_ratio);
         }
 
         ui->render_imgui_content();
@@ -49,7 +51,7 @@ struct App : public SDLApp {
     SDL_AppResult SDL_AppEvent(SDL_Event* event) override
     {
         const auto timestamp = double(reinterpret_cast<SDL_CommonEvent*>(event)->timestamp) / 1e9;
-        std::println("{:.3f} {}", timestamp, sdl_get_event_description(event));
+        // std::println("{:.3f} {}", timestamp, sdl_get_event_description(event));
         ImGui_ImplSDL3_ProcessEvent(event);
         const auto& io = ImGui::GetIO();
         const auto min_window_size = std::min(io.DisplaySize.x, io.DisplaySize.y);
