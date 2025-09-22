@@ -24,7 +24,7 @@ var ENVIRONMENT_IS_SHELL = false;
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
-// include: /var/folders/pp/h0rbkgms00x4skj8_y4bwlmr0000gp/T/tmppo4teohv.js
+// include: /var/folders/pp/h0rbkgms00x4skj8_y4bwlmr0000gp/T/tmpov96rke3.js
 
   Module['expectedDataFileDownloads'] ??= 0;
   Module['expectedDataFileDownloads']++;
@@ -152,21 +152,21 @@ Module['FS_createPath']("/", "assets", true, true);
 
   })();
 
-// end include: /var/folders/pp/h0rbkgms00x4skj8_y4bwlmr0000gp/T/tmppo4teohv.js
-// include: /var/folders/pp/h0rbkgms00x4skj8_y4bwlmr0000gp/T/tmp07rjrdwh.js
+// end include: /var/folders/pp/h0rbkgms00x4skj8_y4bwlmr0000gp/T/tmpov96rke3.js
+// include: /var/folders/pp/h0rbkgms00x4skj8_y4bwlmr0000gp/T/tmpdy_29gei.js
 
     // All the pre-js content up to here must remain later on, we need to run
     // it.
     if ((typeof ENVIRONMENT_IS_WASM_WORKER != 'undefined' && ENVIRONMENT_IS_WASM_WORKER) || (typeof ENVIRONMENT_IS_PTHREAD != 'undefined' && ENVIRONMENT_IS_PTHREAD) || (typeof ENVIRONMENT_IS_AUDIO_WORKLET != 'undefined' && ENVIRONMENT_IS_AUDIO_WORKLET)) Module['preRun'] = [];
     var necessaryPreJSTasks = Module['preRun'].slice();
-  // end include: /var/folders/pp/h0rbkgms00x4skj8_y4bwlmr0000gp/T/tmp07rjrdwh.js
-// include: /var/folders/pp/h0rbkgms00x4skj8_y4bwlmr0000gp/T/tmp_dcmklyn.js
+  // end include: /var/folders/pp/h0rbkgms00x4skj8_y4bwlmr0000gp/T/tmpdy_29gei.js
+// include: /var/folders/pp/h0rbkgms00x4skj8_y4bwlmr0000gp/T/tmp5vtp1b95.js
 
     if (!Module['preRun']) throw 'Module.preRun should exist because file support used it; did a pre-js delete it?';
     necessaryPreJSTasks.forEach((task) => {
       if (Module['preRun'].indexOf(task) < 0) throw 'All preRun tasks that exist before user pre-js code should remain after; did you replace Module or modify Module.preRun?';
     });
-  // end include: /var/folders/pp/h0rbkgms00x4skj8_y4bwlmr0000gp/T/tmp_dcmklyn.js
+  // end include: /var/folders/pp/h0rbkgms00x4skj8_y4bwlmr0000gp/T/tmp5vtp1b95.js
 
 
 var arguments_ = [];
@@ -9498,8 +9498,6 @@ async function createWasm() {
       return ret;
     };
 
-  var requestFullscreen = Browser.requestFullscreen;
-
   var FS_createPath = (...args) => FS.createPath(...args);
 
 
@@ -9571,7 +9569,6 @@ if (Module['wasmBinary']) wasmBinary = Module['wasmBinary'];
   Module['addRunDependency'] = addRunDependency;
   Module['removeRunDependency'] = removeRunDependency;
   Module['ccall'] = ccall;
-  Module['requestFullscreen'] = requestFullscreen;
   Module['FS_preloadFile'] = FS_preloadFile;
   Module['FS_unlink'] = FS_unlink;
   Module['FS_createPath'] = FS_createPath;
@@ -9804,6 +9801,7 @@ missingLibrarySymbols.forEach(missingLibrarySymbol)
   'exceptionCaught',
   'ExceptionInfo',
   'Browser',
+  'requestFullscreen',
   'requestFullScreen',
   'setCanvasSize',
   'getUserMedia',
