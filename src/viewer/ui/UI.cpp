@@ -72,7 +72,8 @@ public:
             if (ImGui::ListBox("Built-in scenes", &current_item, items.data(), iicast<int>(items.size()))) {
                 send_event_to_app(Event::LoadBuiltInScene{.scene_ix = iicast<size_t>(current_item)});
             }
-            ImGui::Text("To load a custom model,\ncopy the the file to the clipboard\nand paste it into the browser.");
+            ImGui::Text("To load a custom model,\ncopy the text file to the clipboard\nand paste it into the browser "
+                        "window.\nFormats: OBJ STL COLLADA\nSmall files only!");
             ImGui::Spacing();
             ImGui::Separator();
             ImGui::Text("CUSTOMIZE SCENE");
@@ -81,12 +82,7 @@ public:
             ImGui::SliderAngle("Light declination", &app_state.light_declination, -180.0f, 180.0f, "%.0f deg", 0);
 
             ImGui::ColorEdit4(
-              "Scene light",
-              glm::value_ptr(app_state.light_color),
-              ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_None
-            );
-            ImGui::ColorEdit4(
-              "Background light",
+              "Background color",
               glm::value_ptr(app_state.background_color),
               ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_None
             );
@@ -106,7 +102,6 @@ public:
             // Always center this window when appearing
             ImVec2 center = ImGui::GetMainViewport()->GetCenter();
             ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-
             if (ImGui::BeginPopupModal("Send customization.json", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
                 ImGui::Text("%s", ui_state.confirm_http_post_request_message->c_str());
                 bool closed = false;
@@ -138,9 +133,10 @@ public:
             ImGui::Separator();
 
             if (ui_state.message_box_text) {
-                ImGui::OpenPopup("MessageBox");
+                ImGui::OpenPopup("Information");
             }
-            if (ImGui::BeginPopupModal("MessageBox", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+            if (ImGui::BeginPopupModal("Information", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
                 ImGui::Text("%s", ui_state.message_box_text->c_str());
                 if (ImGui::Button("OK", ImVec2(120, 0))) {
                     ImGui::CloseCurrentPopup();

@@ -5,6 +5,7 @@
 #include "import3d.h"
 
 #include "ui/UI.h"
+#include "util/Clipboard.h"
 #include "util/SDLApp.h"
 #include "util/UserInputTo3DNavigation.h"
 #include "util/http.h"
@@ -14,19 +15,8 @@
 #include <imgui_impl_sdl3.h>
 #include <meadow/cppext.h>
 #include <nlohmann/json.hpp>
-
-#ifdef __EMSCRIPTEN__
-  #include "util/emscripten_browser_clipboard.h"
-
-namespace
-{
-void browser_paste_handler(std::string&& paste_data, void* app_state)
-{
-    std::println("browser_paste_handler called");
-    reinterpret_cast<AppState*>(app_state)->set_clipboard_text_pasted_into_browser(MOVE(paste_data));
-}
-} // namespace
-#endif
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/rotate_vector.hpp>
 
 namespace
 {
@@ -45,29 +35,31 @@ struct App : public SDLApp {
     AppState app_state;
     ImGuiBackend imgui_backend;
     std::unique_ptr<UI> ui;
+    Clipboard clipboard;
     UserInputTo3DNavigation user_input_to_3d_navigation;
 
     App(int /*argc*/, char** /*argv*/)
         : ui(UI::make(app_state))
+        , clipboard([this] {
+            on_clipboard_paste();
+        })
     {
-        load_scene(0);
-
-#ifdef __EMSCRIPTEN__
-        emscripten_browser_clipboard::paste(&browser_paste_handler, &app_state);
-#endif
+        send_event_to_app(Event::LoadBuiltInScene{0});
     }
 
     SDL_AppResult SDL_AppIterate() override
     {
         // TODO: throttle refresh when no change.
-        imgui_backend.begin_frame();
+        imgui_backend.begin_frame(app_state.background_color);
 
         int w, h;
         CHECK_SDL(SDL_GetWindowSizeInPixels(imgui_backend.get_sdl_window(), &w, &h));
         const float aspect_ratio = float(w) / float(h);
 
         if (app_state.document) {
-            app_state.document->str.render(app_state.camera, aspect_ratio);
+            auto light_dir = glm::rotate(glm::vec3(1, 0, 0), app_state.light_elevation, glm::vec3(0, 0, 1));
+            light_dir = glm::rotate(light_dir, app_state.light_declination, glm::vec3(0, 1, 0));
+            app_state.document->str.render(app_state.camera, aspect_ratio, glm::normalize(light_dir));
         }
 
         ui->render_imgui_content();
@@ -105,6 +97,15 @@ struct App : public SDLApp {
                 auto user_event_ptr = reinterpret_cast<std::any*>(user->data1);
                 handle_user_events(user_event_ptr);
                 delete user_event_ptr;
+            } else if (auto* keyboard = sdl_event_cast<SDL_KeyboardEvent>(event)) {
+#ifdef SDL_PLATFORM_APPLE
+                constexpr auto mod = SDL_KMOD_GUI;
+#else
+                constexpr auto mod = SDL_KMOD_CTRL;
+#endif
+                if (keyboard->down && keyboard->key == SDLK_V && (keyboard->mod & mod)) {
+                    on_clipboard_paste();
+                }
             }
         }
         return SDL_APP_CONTINUE;
@@ -123,9 +124,7 @@ struct App : public SDLApp {
                     {{"filename", app_state.document->filename},
                                               {"light",
                       nlohmann::json(
-                        {{"elevation", app_state.light_elevation},
-                         {"declination", app_state.light_declination},
-                         {"color", to_json_array(app_state.light_color)}}
+                        {{"elevation", app_state.light_elevation}, {"declination", app_state.light_declination}}
                       )},
                                               {"background_color", to_json_array(app_state.background_color)}}
                   )
@@ -180,9 +179,24 @@ struct App : public SDLApp {
         app_state.document = Document{
           .prebuilt_scene_ix = prebuilt_scene_ix,
           .filename = filename,
-          .str = import_to_scene_to_render(path, imgui_backend.get_glsl_version())
+          .str = import_to_scene_to_render_from_file(path, imgui_backend.get_glsl_version())
         };
         app_state.camera = make_camera_for_bounding_box(app_state.document->str.get_bounding_box());
+    }
+
+    void on_clipboard_paste()
+    {
+        std::println("App::on_clipboard_paste");
+        auto clipboard_text = clipboard.get_text();
+        std::println("App::on_clipboard_paste clipboard text is {} chars", clipboard_text.size());
+        if (auto str = import_to_scene_to_render_from_text(clipboard_text, imgui_backend.get_glsl_version())) {
+            app_state.document = Document{.prebuilt_scene_ix = std::nullopt, .filename = {}, .str = MOVE(*str)};
+            app_state.camera = make_camera_for_bounding_box(app_state.document->str.get_bounding_box());
+        } else {
+            auto message = std::format("Failed to load scene from pasted 3D scene file, reason: {}", str.error());
+            std::println("ui->display_message_box(\"{}\")", message);
+            ui->display_message_box(message);
+        }
     }
 };
 

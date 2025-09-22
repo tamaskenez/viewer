@@ -17,7 +17,7 @@ Camera make_camera_for_bounding_box(const std::array<glm::vec3, 2>& bb)
     const auto fovy = k_default_fovy;
     const auto viewing_distance = diameter / sin(fovy);
     return Camera{
-      .pos = bb_center - glm::vec3(0, 0, viewing_distance),
+      .pos = bb_center + glm::vec3(0, 0, viewing_distance),
       .lookat = bb_center,
       .up = glm::vec3(0, 1, 0),
       .fovy = fovy,

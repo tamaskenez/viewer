@@ -55,9 +55,8 @@ SceneToRender::SceneToRender(
         uniform vec4 specular_color;
         uniform float shininess;
         uniform float shininess_strength;
+        uniform vec3 dir_to_light;
 
-        const vec3 dir_to_light = normalize(vec3(1, 1, 1));
-        const vec3 light_color = vec3(1, 1, 1);
         const float k_ambient_intensity = 0.1;
         
         vec4 srgb_linear_to_gamma(vec4 c) {
@@ -106,7 +105,7 @@ SceneToRender::SceneToRender(
     );
 }
 
-void SceneToRender::render(const Camera& camera, float aspect_ratio)
+void SceneToRender::render(const Camera& camera, float aspect_ratio, const glm::vec3& light_dir)
 {
     const auto vp = make_view_projection_matrix(camera, aspect_ratio);
 
@@ -119,6 +118,10 @@ void SceneToRender::render(const Camera& camera, float aspect_ratio)
     loc = CHECK_GL(glGetUniformLocation(*program, "camera_pos_world"));
     CHECK(loc >= 0);
     CHECK_GL_VOID(glUniform3fv(loc, 1, glm::value_ptr(camera.pos)));
+
+    loc = CHECK_GL(glGetUniformLocation(*program, "dir_to_light"));
+    CHECK(loc >= 0);
+    CHECK_GL_VOID(glUniform3fv(loc, 1, glm::value_ptr(light_dir)));
 
     int specular_color_location = CHECK_GL(glGetUniformLocation(*program, "specular_color"));
     CHECK(specular_color_location >= 0);

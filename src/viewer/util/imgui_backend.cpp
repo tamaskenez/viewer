@@ -141,7 +141,7 @@ ImGuiBackend::~ImGuiBackend()
 #endif
 }
 
-void ImGuiBackend::begin_frame()
+void ImGuiBackend::begin_frame(const glm::vec4& clear_color)
 {
     // Start the Dear ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
@@ -151,7 +151,6 @@ void ImGuiBackend::begin_frame()
     int w, h;
     CHECK_SDL(SDL_GetWindowSizeInPixels(window.get(), &w, &h));
 
-    const SDL_FColor clear_color = SDL_FColor{0.45f, 0.55f, 0.60f, 1.00f};
     CHECK_GL_VOID(glViewport(0, 0, w, h));
     CHECK_GL_VOID(glClearColor(clear_color.r, clear_color.g, clear_color.b, clear_color.a));
     CHECK_GL_VOID(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));

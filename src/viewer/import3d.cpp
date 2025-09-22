@@ -13,22 +13,21 @@
 
 namespace
 {
+constexpr auto k_importer_flags = aiProcessPreset_TargetRealtime_Quality | aiProcess_PreTransformVertices;
+
+static_assert(
+  std::is_same_v<ai_real, float>,
+  "Implementation of import_to_scene_to_render assumes that ai_real is float but it isn't."
+);
+
 template<class T>
 auto to_glm(const aiVector3t<T>& v)
 {
     return glm::vec<3, T, glm::defaultp>(v.x, v.y, v.z);
 }
-} // namespace
 
-SceneToRender import_to_scene_to_render(const std::filesystem::path& path, std::string glsl_version)
+SceneToRender import_to_scene_to_render(const aiScene* scene, std::string glsl_version)
 {
-    static_assert(
-      std::is_same_v<ai_real, float>,
-      "Implementation of import_to_scene_to_render assumes that ai_real is float but it isn't."
-    );
-
-    Assimp::Importer importer;
-    auto scene = importer.ReadFile(path, aiProcessPreset_TargetRealtime_Quality | aiProcess_PreTransformVertices);
     // Note that aiProcess_PreTransformVertices simplifies rendering but it's a bad idea for scenes where a single brick
     // is instantiated many times, so:
     // TODO: remove aiProcess_PreTransformVertices and implement hierarchical scene rendering.
@@ -76,18 +75,21 @@ SceneToRender import_to_scene_to_render(const std::filesystem::path& path, std::
 
         mtr.vbo_pos = gl_gen_buffer();
         CHECK_GL_VOID(glBindBuffer(GL_ARRAY_BUFFER, *mtr.vbo_pos));
-        CHECK_GL_VOID(
-          glBufferData(GL_ARRAY_BUFFER, mesh->mNumVertices * sizeof(aiVector3D), mesh->mVertices, GL_STATIC_DRAW)
-        );
+        CHECK_GL_VOID(glBufferData(
+          GL_ARRAY_BUFFER, iicast<GLsizeiptr>(mesh->mNumVertices * sizeof(aiVector3D)), mesh->mVertices, GL_STATIC_DRAW
+        ));
         CHECK_GL_VOID(glEnableVertexAttribArray(0));
         CHECK_GL_VOID(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr));
 
         if (mesh->HasNormals()) {
             mtr.vbo_norm = gl_gen_buffer();
             CHECK_GL_VOID(glBindBuffer(GL_ARRAY_BUFFER, *mtr.vbo_norm));
-            CHECK_GL_VOID(
-              glBufferData(GL_ARRAY_BUFFER, mesh->mNumVertices * sizeof(aiVector3D), mesh->mNormals, GL_STATIC_DRAW)
-            );
+            CHECK_GL_VOID(glBufferData(
+              GL_ARRAY_BUFFER,
+              iicast<GLsizeiptr>(mesh->mNumVertices * sizeof(aiVector3D)),
+              mesh->mNormals,
+              GL_STATIC_DRAW
+            ));
             CHECK_GL_VOID(glEnableVertexAttribArray(1));
             CHECK_GL_VOID(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr));
         }
@@ -110,4 +112,37 @@ SceneToRender import_to_scene_to_render(const std::filesystem::path& path, std::
         CHECK_GL_VOID(glBindVertexArray(0));
     }
     return SceneToRender(glsl_version, bounding_box, MOVE(materials), MOVE(meshes));
+}
+
+} // namespace
+
+SceneToRender import_to_scene_to_render_from_file(const std::filesystem::path& path, std::string glsl_version)
+{
+    Assimp::Importer importer;
+    return import_to_scene_to_render(importer.ReadFile(path, k_importer_flags), glsl_version);
+}
+
+std::expected<SceneToRender, std::string>
+import_to_scene_to_render_from_text(std::string_view text, std::string glsl_version)
+{
+    Assimp::Importer importer;
+    try {
+        std::println("About to import text data of size {}", text.size());
+        auto* scene = importer.ReadFileFromMemory(text.data(), text.size(), k_importer_flags);
+        if (scene) {
+            std::println("Importer returned non-null scene.");
+        } else {
+            std::println("Importer returned error");
+            std::println("...which is: {}", importer.GetErrorString());
+            return std::unexpected(importer.GetErrorString());
+        }
+        return import_to_scene_to_render(scene, glsl_version);
+    } catch (std::exception& e) {
+        std::println("Importer threw exception.");
+        std::println("...which is: {}", e.what());
+        return std::unexpected(e.what());
+    } catch (...) {
+        std::println("Importer threw unknown exception.");
+        return std::unexpected("Unknown exception");
+    }
 }

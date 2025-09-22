@@ -2,6 +2,7 @@
 
 #include "util/sdl_util.h"
 
+#include <glm/vec4.hpp>
 #include <imgui.h>
 
 // sdl/opengl/imgui-related display and rendering controller.
@@ -14,7 +15,7 @@ public:
     ImGuiBackend();
     ~ImGuiBackend();
 
-    void begin_frame();
+    void begin_frame(const glm::vec4& clear_color);
     void end_frame();
 
     const std::string& get_glsl_version() const

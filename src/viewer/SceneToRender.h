@@ -37,7 +37,7 @@ public:
       std::vector<MeshToRender> meshes
     );
 
-    void render(const Camera& camera, float aspect_ratio);
+    void render(const Camera& camera, float aspect_ratio, const glm::vec3& light_dir);
 
     const std::array<glm::vec3, 2>& get_bounding_box() const
     {
